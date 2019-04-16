@@ -9,6 +9,7 @@ from keras.callbacks import ModelCheckpoint, LearningRateScheduler
 from keras.callbacks import ReduceLROnPlateau
 from keras.preprocessing.image import ImageDataGenerator
 from keras.regularizers import l2
+from keras.utils import np_utils
 from keras import backend as K
 from keras.models import Model
 import numpy as np
@@ -26,7 +27,7 @@ img_rows, img_cols = 128, 128
 # number of channels
 img_channels = 3
 # number of epochs
-epochs=25
+epoch=40
 
 # number of output classes
 nb_classes = 5
@@ -67,36 +68,41 @@ print(num_samples)
 for file in list_table:
     im = Image.open(path1_table + '/' + file)  
     img = im.resize((img_rows,img_cols))
-    img = img.convert('RGB')          
-    img.save(path2_table_processed +'/' +  file, "JPEG")
+    img = img.convert('L')          
+    file_name = file.split('.')
+    img.save(path2_table_processed +'/' +  file_name[0] + '.jpg', "JPEG")
 
 # save the processed plot images
 for file in list_plot:
     im = Image.open(path1_plot + '/' + file)  
     img = im.resize((img_rows,img_cols))
-    img = img.convert('RGB')         
-    img.save(path2_plot_processed +'/' +  file, "JPEG")
+    img = img.convert('L')     
+    file_name = file.split('.')    
+    img.save(path2_plot_processed +'/' + file_name[0] + '.jpg', "JPEG")
 
 # save the processed diagram images
 for file in list_diagram:
     im = Image.open(path1_diagram + '/' + file)  
     img = im.resize((img_rows,img_cols))
-    img = img.convert('RGB')          
-    img.save(path2_diagram_processed +'/' +  file, "JPEG")
+    img = img.convert('L')     
+    file_name = file.split('.')     
+    img.save(path2_diagram_processed +'/' +file_name[0] + '.jpg', "JPEG")
  
 #save the processed histogram images
 for file in list_histogram:
     im = Image.open(path1_histogram + '/' + file)  
     img = im.resize((img_rows,img_cols))
-    img = img.convert('RGB')          
-    img.save(path2_histogram_processed +'/' +  file, "JPEG")
+    img = img.convert('L')     
+    file_name = file.split('.')     
+    img.save(path2_histogram_processed +'/' + file_name[0] + '.jpg', "JPEG")
 
 #save the processed graph images
 for file in list_graph:
     im = Image.open(path1_graph + '/' + file)  
     img = im.resize((img_rows,img_cols))
-    img = img.convert('RGB')          
-    img.save(path2_graph_processed +'/' +  file, "JPEG")
+    img = img.convert('L')     
+    file_name = file.split('.')     
+    img.save(path2_graph_processed +'/' + file_name[0] + '.jpg', "JPEG")
 
 
 # img_list = os.listdir(path2)
@@ -111,12 +117,11 @@ for file in list_graph:
 table_imglist = os.listdir(path2_table_processed)
 print (table_imglist)
 table_img1 = array(Image.open(path2_table_processed + '/'+ table_imglist[0])) # open one table image to get size
-table_m,table_n = table_im1.shape[0:2] # get the size of the table images
+table_m,table_n = table_img1.shape[0:2] # get the size of the table images
 table_image_number = len(table_imglist) # get the number of table images
 
 # create matrix to store all flattened table images
-table_imgmatrix = array([array(Image.open(path2_table_processed + '/' + table_img2)).flatten()
-              for table_img2 in table_imglist],'f')
+table_imgmatrix = np.array([np.array(Image.open(path2_table_processed + '/' + table_img2)).flatten() for table_img2 in table_imglist])
 
 
 
@@ -128,8 +133,7 @@ plot_m,plot_n = plot_img1.shape[0:2] # get the size of the plot images
 plot_image_number = len(plot_imglist) # get the number of plot images
 
 # create matrix to store all flattened plot images
-plot_imgmatrix = array([array(Image.open(path2_plot_processed + '/' + plot_img2)).flatten()
-              for plot_img2 in plot_imglist],'f')
+plot_imgmatrix = np.array([np.array(Image.open(path2_plot_processed + '/' + plot_img2)).flatten() for plot_img2 in plot_imglist])
 
 
 #Processing for diagram images
@@ -140,8 +144,7 @@ diagram_m,diagram_n = diagram_img1.shape[0:2] # get the size of the diagram imag
 diagram_image_number = len(diagram_imglist) # get the number of diagram images
 
 # create matrix to store all flattened diagram images
-diagram_imgmatrix = array([array(Image.open(path2_diagram_processed + '/' + diagram_img2)).flatten()
-               for diagram_img2 in diagram_imglist],'f')
+diagram_imgmatrix = np.array([np.array(Image.open(path2_diagram_processed + '/' + diagram_img2)).flatten() for diagram_img2 in diagram_imglist])
 
 #Processing for histogram images
 histogram_imglist = os.listdir(path2_histogram_processed)
@@ -151,8 +154,7 @@ histogram_m,histogram_n = histogram_img1.shape[0:2] # get the size of the histog
 histogram_image_number = len(histogram_imglist) # get the number of histogram images
 
 # create matrix to store all flattened histogram images
-histogram_imgmatrix = array([array(Image.open(path2_histogram_processed + '/' + histogram_img2)).flatten()
-               for histogram_img2 in histogram_imglist],'f')
+histogram_imgmatrix = np.array([np.array(Image.open(path2_histogram_processed + '/' + histogram_img2)).flatten() for histogram_img2 in histogram_imglist])
 
 #Processing for graph images
 graph_imglist = os.listdir(path2_graph_processed)
@@ -162,20 +164,19 @@ graph_m,histogram_n = graph_img1.shape[0:2] # get the size of the graph images
 graph_image_number = len(graph_imglist) # get the number of graph images
 
 # create matrix to store all flattened graph images
-graph_imgmatrix = array([array(Image.open(path2_graph_processed + '/' + graph_img2)).flatten()
-               for graph_img2 in graph_imglist],'f')
+graph_imgmatrix = array([array(Image.open(path2_graph_processed + '/' + graph_img2)).flatten() for graph_img2 in graph_imglist])
 
 
 
 # Combining each matrix
-imgmatrix = numpy.concatenate((table_imgmatrix, plot_imgmatrix), axis=0)
-imgmatrix = numpy.concatenate((imgmatrix, diagram_imgmatrix), axis=0)
-imgmatrix = numpy.concatenate((imgmatrix,histogram_imgmatrix), axis=0)
-imgmatrix = numpy.concatenate((imgmatrix,graph_imgmatrix), axis=0)
+imgmatrix = np.concatenate((table_imgmatrix, plot_imgmatrix), axis=0)
+imgmatrix = np.concatenate((imgmatrix, diagram_imgmatrix), axis=0)
+imgmatrix = np.concatenate((imgmatrix,histogram_imgmatrix), axis=0)
+imgmatrix = np.concatenate((imgmatrix,graph_imgmatrix), axis=0)
 
 class_array = ['Plot','Table','Histogram', 'Graph', 'Diagram']
 
-label=numpy.ones((num_samples,),dtype = int)
+label=np.ones((num_samples,),dtype = int)
 label[0:393]=0
 label[393:667]=1
 label[667:804]=2
@@ -189,21 +190,23 @@ train_data = [data,Label]
 
 #split X and y into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=2)
-X_train = X_train.reshape(X_train.shape[0], 1, img_rows, img_cols)
-X_test = X_test.reshape(X_test.shape[0], 1, img_rows, img_cols)
+X_train = np.stack([X_train]*3, axis=-1)
+X_test = np.stack([X_test]*3, axis=-1)
+X_train = X_train.reshape(X_train.shape[0], img_rows, img_cols , 3)
+X_test = X_test.reshape(X_test.shape[0], img_rows, img_cols , 3)
 
 # Save the test images in a file for displaying
-size = X_test.shape[0]
-for imgn in range(size):
-    img = Image.fromarray(X_test[imgn][0])
-    img = img.convert('RGB')
-    img.save('/home/mayank/Desktop/BTP/data/test_image' +'/' +  str(imgn), "JPEG")
+# size = X_test.shape[0]
+# for imgn in range(size):
+#     img = Image.fromarray(X_test[imgn][0])
+#     img = img.convert('L')
+#     img.save('/home/mayank/Desktop/BTP/data/test_image' +'/' +  str(imgn), "JPEG")
 
 
 # Data preprocessing
 X_train = X_train.astype('float32')
 X_test = X_test.astype('float32')
-mean1 = numpy.mean(X_train) # for finding the mean for centering  to zero
+mean1 = np.mean(X_train) # for finding the mean for centering  to zero
 X_train -= mean1
 X_test -= mean1
 
@@ -212,7 +215,6 @@ X_test -= mean1
 Y_train = np_utils.to_categorical(y_train, nb_classes)
 Y_test = np_utils.to_categorical(y_test, nb_classes)
 
-nb_classes = 5
 
 model = ResNet50(include_top =False, weights='imagenet', input_shape=(128,128,3), pooling='avg')
 
@@ -234,13 +236,14 @@ resnet_model2.summary()
 for layer in resnet_model2.layers[:-6]:
 	layer.trainable = False
 
-   resnet_model2.layers[-1].trainable
 
-resnet_model2.compile(loss='categorical_crossentropy',optimizer='adam',metrics=['accuracy'])
+resnet_model2.layers[-1].trainable
+
+resnet_model2.compile(loss='sparse_categorical_crossentropy',optimizer='adam',metrics=['accuracy'])
 
 y_train = y_train.reshape((-1, 1))
 # Fit the model
-resnet_model2.fit(X_train, y_train, validation_data=(X_test, y_test),batch_size=32, nb_epoch=epochs, verbose=2)
+resnet_model2.fit(X_train, y_train, validation_data=(X_test, y_test),batch_size=32, epochs=epoch, verbose=2)
 # Final evaluation of the model
-scores = resnet_model2.evaluate(X_test, y_test, verbose=0)
-print "%s: %.2f%%" % (resnet_model2.metrics_names[1], scores[1]*100)
+scores = resnet_model2.evaluate(X_test, y_test, verbose=1)
+print ("%s: %.2f%%" % (resnet_model2.metrics_names[1], scores[1]*100))

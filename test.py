@@ -63,7 +63,6 @@ test_imgmatrix = test_imgmatrix.astype('float32')
 mean1 = np.mean(test_imgmatrix) # for finding the mean for centering  to zero
 test_imgmatrix -= mean1
 
-
 classes = loaded_model.predict(test_imgmatrix)
 
 print(classes)

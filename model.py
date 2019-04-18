@@ -1,4 +1,3 @@
-#ALL IMPORTS
 from __future__ import print_function
 import keras
 from keras.applications.resnet50 import ResNet50
@@ -9,9 +8,9 @@ from keras.callbacks import ModelCheckpoint, LearningRateScheduler
 from keras.callbacks import ReduceLROnPlateau
 from keras.preprocessing.image import ImageDataGenerator
 from keras.regularizers import l2
-from keras.utils import np_utils
 from keras import backend as K
-from keras.models import Model
+from keras.models import Model,model_from_json
+from keras import utils as np_utils
 import numpy as np
 import os
 import matplotlib.pyplot as plt
@@ -21,13 +20,15 @@ from numpy import *
 from sklearn.utils import shuffle
 from sklearn.model_selection import train_test_split
 
+
 # input image dimensions
 img_rows, img_cols = 256,256
 
 # number of channels
 img_channels = 3
+
 # number of epochs
-epoch=2
+epoch = 50
 
 # number of output classes
 nb_classes = 5
@@ -159,10 +160,10 @@ graph_image_number = len(graph_imglist) # get the number of graph images
 graph_imgmatrix = array([array(Image.open(path2_graph_processed + '/' + graph_img2)).flatten() for graph_img2 in graph_imglist])
 
 # Combining each matrix
-imgmatrix = np.concatenate((table_imgmatrix, plot_imgmatrix), axis=0)
-imgmatrix = np.concatenate((imgmatrix, diagram_imgmatrix), axis=0)
-imgmatrix = np.concatenate((imgmatrix,histogram_imgmatrix), axis=0)
+imgmatrix = np.concatenate((plot_imgmatrix, table_imgmatrix), axis=0)
+imgmatrix = np.concatenate((imgmatrix, histogram_imgmatrix), axis=0)
 imgmatrix = np.concatenate((imgmatrix,graph_imgmatrix), axis=0)
+imgmatrix = np.concatenate((imgmatrix,diagram_imgmatrix), axis=0)
 
 class_array = ['Plot','Table','Histogram', 'Graph', 'Diagram']
 

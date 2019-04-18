@@ -22,12 +22,12 @@ from sklearn.utils import shuffle
 from sklearn.model_selection import train_test_split
 
 # input image dimensions
-img_rows, img_cols = 128, 128
+img_rows, img_cols = 256,256
 
 # number of channels
 img_channels = 3
 # number of epochs
-epoch=40
+epoch=2
 
 # number of output classes
 nb_classes = 5
@@ -105,14 +105,6 @@ for file in list_graph:
     img.save(path2_graph_processed +'/' + file_name[0] + '.jpg', "JPEG")
 
 
-# img_list = os.listdir(path2)
-# img1 = array(Image.open(path2 +'/'+ img_list[0])) # open one image to get size
-# m,n = img1.shape[0:2] # get the size of the images
-# # print(m,n)
-# img_number = size(img_list) # get the number of images
-# # print(img_number)
-
-
 #Processing for table images
 table_imglist = os.listdir(path2_table_processed)
 print (table_imglist)
@@ -166,8 +158,6 @@ graph_image_number = len(graph_imglist) # get the number of graph images
 # create matrix to store all flattened graph images
 graph_imgmatrix = array([array(Image.open(path2_graph_processed + '/' + graph_img2)).flatten() for graph_img2 in graph_imglist])
 
-
-
 # Combining each matrix
 imgmatrix = np.concatenate((table_imgmatrix, plot_imgmatrix), axis=0)
 imgmatrix = np.concatenate((imgmatrix, diagram_imgmatrix), axis=0)
@@ -189,19 +179,17 @@ train_data = [data,Label]
 (X, y) = (train_data[0],train_data[1])
 
 #split X and y into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=2)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random_state=2)
 X_train = np.stack([X_train]*3, axis=-1)
 X_test = np.stack([X_test]*3, axis=-1)
 X_train = X_train.reshape(X_train.shape[0], img_rows, img_cols , 3)
 X_test = X_test.reshape(X_test.shape[0], img_rows, img_cols , 3)
 
 # Save the test images in a file for displaying
-# size = X_test.shape[0]
-# for imgn in range(size):
-#     img = Image.fromarray(X_test[imgn][0])
-#     img = img.convert('L')
-#     img.save('/home/mayank/Desktop/BTP/data/test_image' +'/' +  str(imgn), "JPEG")
-
+size = X_test.shape[0]
+for imgn in range(size):
+    img = Image.fromarray(X_test[imgn][0], 'L')
+    img.save('/home/mayank/Desktop/BTP/data/test_images' +'/' +  str(imgn) + '.jpg', "JPEG")
 
 # Data preprocessing
 X_train = X_train.astype('float32')
@@ -216,15 +204,21 @@ Y_train = np_utils.to_categorical(y_train, nb_classes)
 Y_test = np_utils.to_categorical(y_test, nb_classes)
 
 
-model = ResNet50(include_top =False, weights='imagenet', input_shape=(128,128,3), pooling='avg')
+model = ResNet50(include_top =False, weights='imagenet', input_shape=(img_cols,img_rows,3), pooling='avg')
 
 x = model.output
 
 # add fully-connected & dropout layers
 x = Dense(512, activation='relu',name='fc-1')(x)
-x = Dropout(0.5)(x)
+x = Dropout(0.7)(x)
 x = Dense(256, activation='relu',name='fc-2')(x)
 x = Dropout(0.5)(x)
+x = Dense(128, activation='relu',name='fc-3')(x)
+x = Dropout(0.5)(x)
+x = Dense(64, activation='relu',name='fc-4')(x)
+x = Dropout(0.3)(x)
+
+
 # a softmax layer for 5 classes
 out = Dense(nb_classes, activation='softmax',name='output_layer')(x)
 
@@ -238,12 +232,23 @@ for layer in resnet_model2.layers[:-6]:
 
 
 resnet_model2.layers[-1].trainable
+ 
+learning_rate = 0.001
+b1 = 0.9
+b2 = 0.999
 
-resnet_model2.compile(loss='sparse_categorical_crossentropy',optimizer='adam',metrics=['accuracy'])
-
+resnet_model2.compile(loss='sparse_categorical_crossentropy',optimizer=Adam(lr=learning_rate, beta_1=b1, beta_2=b2, epsilon=None),metrics=['accuracy'])
 y_train = y_train.reshape((-1, 1))
 # Fit the model
-resnet_model2.fit(X_train, y_train, validation_data=(X_test, y_test),batch_size=32, epochs=epoch, verbose=2)
+resnet_model2.fit(X_train, y_train, validation_data=(X_test, y_test),batch_size=16, epochs=epoch, verbose=2)
 # Final evaluation of the model
 scores = resnet_model2.evaluate(X_test, y_test, verbose=1)
 print ("%s: %.2f%%" % (resnet_model2.metrics_names[1], scores[1]*100))
+
+# serialize model to JSON
+model_json = resnet_model2.to_json()
+with open("model.json", "w") as json_file:
+    json_file.write(model_json)
+# serialize weights to HDF5
+resnet_model2.save_weights("model.h5")
+print("Saved model to disk")

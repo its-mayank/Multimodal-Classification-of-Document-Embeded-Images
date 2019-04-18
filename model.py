@@ -185,11 +185,6 @@ X_test = np.stack([X_test]*3, axis=-1)
 X_train = X_train.reshape(X_train.shape[0], img_rows, img_cols , 3)
 X_test = X_test.reshape(X_test.shape[0], img_rows, img_cols , 3)
 
-# Save the test images in a file for displaying
-size = X_test.shape[0]
-for imgn in range(size):
-    img = Image.fromarray(X_test[imgn][0], 'L')
-    img.save('/home/mayank/Desktop/BTP/data/test_images' +'/' +  str(imgn) + '.jpg', "JPEG")
 
 # Data preprocessing
 X_train = X_train.astype('float32')
